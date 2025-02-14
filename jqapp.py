@@ -16,6 +16,8 @@ sample_selectors = [
     '.factMap."15!T".aggregates',
 ]
 
+HEIGHT = 300
+
 # Sidebar - Upload JSON
 st.sidebar.header("📂 Upload JSON File")
 uploaded_file = st.sidebar.file_uploader("Choose a JSON file", type=["json"])
@@ -31,7 +33,7 @@ json_input = st_ace(
     value=json.dumps(json_data, indent=2),
     language="json",
     theme="monokai",
-    height=300
+    height=HEIGHT
 )
 
 # Dropdown for sample selectors
@@ -58,6 +60,7 @@ st_ace(
     value=output_json,
     language="json",
     theme="monokai",
-    height=300,
+    height=HEIGHT,
     readonly=True
+
 )
