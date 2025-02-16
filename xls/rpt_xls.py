@@ -62,6 +62,23 @@ def get_report_details(access_token, instance_url, report_id):
     except Exception as e:
         return {"error": str(e)}
 
+
+# Function to get the list of report types
+def get_report_types(access_token, instance_url):
+    try:
+        url = f"{instance_url}/services/data/v60.0/analytics/reportTypes"
+        headers = {"Authorization": f"Bearer {access_token}"}
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"error": f"Error: {response.status_code} - {response.text}"}
+    except Exception as e:
+        return {"error": str(e)}
+    
+
 # Streamlit UI
 st.title("📊 Salesforce Report Utility")
 st.markdown("Enter the required details to download or analyze your report.")
@@ -72,7 +89,7 @@ instance_url = st.text_input("🌐 Instance URL", value="https://your-instance.s
 report_id = st.text_input("📄 Report ID : 00Oxxxx")
 
 # Options
-option = st.radio("Select an action:", ["Download Excel", "Describe Report", "Get Report Details"])
+option = st.radio("Select an action:", ["Download Excel", "Describe Report", "Get Report Details", "Get List of Report Types"])
 
 if st.button("Execute"):
     if access_token and instance_url and report_id:
@@ -124,5 +141,22 @@ if st.button("Execute"):
             st_ace(value=json_text, language="json", theme="monokai", readonly=True)
 
            
+        elif option == "Get List of Report Types":
+            report_types = get_report_types(access_token, instance_url)
+
+            # Display JSON with streamlit_ace
+            st.subheader("📄 List of Report Types (JSON)")
+            json_text = json.dumps(report_types, indent=4)
+
+            # Provide JSON download button
+            json_filename = "report_types.json"
+            st.download_button(
+                label="📥 Download JSON",
+                data=json_text,
+                file_name=json_filename,
+                mime="application/json"
+            )
+            st_ace(value=json_text, language="json", theme="monokai", readonly=True)
+
     else:
         st.warning("⚠️ Please enter all required fields.")
