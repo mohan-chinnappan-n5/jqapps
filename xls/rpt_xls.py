@@ -107,7 +107,6 @@ report_id = st.text_input("📄 Report ID : 00Oxxxx")
 option = st.radio("Select an action:", ["List of Reports", "Download Excel", "Describe Report", "Get Report Details", "Get List of Report Types"])
 
 if st.button("Execute"):
-
     if access_token and instance_url :
         if option == "List of Reports":   
             list_of_reports = list_reports(access_token, instance_url)
