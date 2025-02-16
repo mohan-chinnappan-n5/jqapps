@@ -61,15 +61,16 @@ if st.button("Execute"):
             # Display JSON
             st.subheader("📋 List of Dashboards (JSON)")
             json_text = json.dumps(dashboards, indent=4)
-            st_ace(value=json_text, language="json", theme="monokai", readonly=True)
-
-            # JSON Download
+             # JSON Download
             st.download_button(
                 label="📥 Download JSON",
                 data=json_text,
                 file_name="list_of_dashboards.json",
                 mime="application/json"
             )
+            st_ace(value=json_text, language="json", theme="monokai", readonly=True)
+
+           
 
         elif dashboard_id:
             if option == "Get Dashboard Results":
@@ -78,7 +79,6 @@ if st.button("Execute"):
                 # Display JSON
                 st.subheader("📊 Dashboard Results (JSON)")
                 json_text = json.dumps(results, indent=4)
-                st_ace(value=json_text, language="json", theme="monokai", readonly=True)
 
                 # JSON Download
                 st.download_button(
@@ -87,6 +87,8 @@ if st.button("Execute"):
                     file_name="dashboard_results.json",
                     mime="application/json"
                 )
+                st_ace(value=json_text, language="json", theme="monokai", readonly=True)
+
 
             elif option == "Get Dashboard Metadata":
                 metadata = get_dashboard_metadata(access_token, instance_url, dashboard_id)
@@ -94,7 +96,6 @@ if st.button("Execute"):
                 # Display JSON
                 st.subheader("📑 Dashboard Metadata (JSON)")
                 json_text = json.dumps(metadata, indent=4)
-                st_ace(value=json_text, language="json", theme="monokai", readonly=True)
 
                 # JSON Download
                 st.download_button(
@@ -103,6 +104,8 @@ if st.button("Execute"):
                     file_name="dashboard_metadata.json",
                     mime="application/json"
                 )
+                st_ace(value=json_text, language="json", theme="monokai", readonly=True)
+
 
             elif option == "Download Dashboard as PNG":
                 png_data = download_dashboard_png(access_token, instance_url, dashboard_id)
