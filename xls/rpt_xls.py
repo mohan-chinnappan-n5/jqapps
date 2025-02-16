@@ -128,7 +128,7 @@ if st.button("Execute"):
 
             
 
-    if access_token and instance_url and report_id:
+    if access_token and instance_url and report_id and option != "List of Reports":
         if option == "Download Excel":
             file_path, message = get_excel_report(access_token, instance_url, report_id)
             if file_path:
