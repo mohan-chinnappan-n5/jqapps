@@ -1,31 +1,26 @@
 import streamlit as st
 import requests
 import os
+import json
+from streamlit_ace import st_ace
 
 # Function to fetch the Excel report from Salesforce
 def get_excel_report(access_token, instance_url, report_id):
     try:
-        # API endpoint
         url = f"{instance_url}/services/data/v60.0/analytics/reports/{report_id}"
-
-        # Headers for the request
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Accept": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         }
 
-        # Make the GET request
         response = requests.get(url, headers=headers)
 
-        # Check response status
         if response.status_code == 200:
-            # Get the filename from the Content-Disposition header
             content_disposition = response.headers.get("Content-Disposition", "")
-            filename = "Salesforce_Report.xlsx"  # Default filename
+            filename = "Salesforce_Report.xlsx"
             if "filename=" in content_disposition:
                 filename = content_disposition.split("filename=")[-1].strip('"')
 
-            # Save the file locally
             file_path = os.path.join("downloads", filename)
             os.makedirs("downloads", exist_ok=True)
             with open(file_path, "wb") as file:
@@ -37,23 +32,97 @@ def get_excel_report(access_token, instance_url, report_id):
     except Exception as e:
         return None, f"Exception: {str(e)}"
 
+# Function to describe the report structure
+def describe_report(access_token, instance_url, report_id):
+    try:
+        url = f"{instance_url}/services/data/v60.0/analytics/reports/{report_id}/describe"
+        headers = {"Authorization": f"Bearer {access_token}"}
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"error": f"Error: {response.status_code} - {response.text}"}
+    except Exception as e:
+        return {"error": str(e)}
+
+# Function to get report details (all records)
+def get_report_details(access_token, instance_url, report_id):
+    try:
+        url = f"{instance_url}/services/data/v60.0/analytics/reports/{report_id}?includeDetails=true"
+        headers = {"Authorization": f"Bearer {access_token}"}
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"error": f"Error: {response.status_code} - {response.text}"}
+    except Exception as e:
+        return {"error": str(e)}
+
 # Streamlit UI
-st.title("📊 Salesforce Report Downloader")
-st.markdown("Enter the required details to download the report as an Excel file.")
+st.title("📊 Salesforce Report Utility")
+st.markdown("Enter the required details to download or analyze your report.")
 
 # User Inputs
 access_token = st.text_input("🔑 Access Token", type="password")
 instance_url = st.text_input("🌐 Instance URL", value="https://your-instance.salesforce.com")
-report_id = st.text_input("📄 Report ID")
+report_id = st.text_input("📄 Report ID : 00Oxxxx")
 
-# Download Button
-if st.button("Download Report"):
+# Options
+option = st.radio("Select an action:", ["Download Excel", "Describe Report", "Get Report Details"])
+
+if st.button("Execute"):
     if access_token and instance_url and report_id:
-        file_path, message = get_excel_report(access_token, instance_url, report_id)
-        if file_path:
-            st.success("✅ Report generated successfully!")
-            st.download_button(label="📥 Download Excel Report", data=open(file_path, "rb"), file_name=message, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        else:
-            st.error(message)
+        if option == "Download Excel":
+            file_path, message = get_excel_report(access_token, instance_url, report_id)
+            if file_path:
+                st.success("✅ Report generated successfully!")
+                st.download_button(
+                    label="📥 Download Excel Report",
+                    data=open(file_path, "rb"),
+                    file_name=message,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+            else:
+                st.error(message)
+
+        elif option == "Describe Report":
+            report_description = describe_report(access_token, instance_url, report_id)
+
+            # Display JSON with streamlit_ace
+            st.subheader("📑 Report Description (JSON)")
+            json_text = json.dumps(report_description, indent=4)
+            # Provide JSON download button
+            json_filename = "report_description.json"
+            st.download_button(
+                label="📥 Download JSON",
+                data=json_text,
+                file_name=json_filename,
+                mime="application/json"
+            )
+            st_ace(value=json_text, language="json", theme="monokai", readonly=True)
+
+      
+
+        elif option == "Get Report Details":
+            report_details = get_report_details(access_token, instance_url, report_id)
+
+            # Display JSON with streamlit_ace
+            st.subheader("📊 Report Details (JSON)")
+            json_text = json.dumps(report_details, indent=4)
+             # Provide JSON download button
+            json_filename = "report_details.json"
+            st.download_button(
+                label="📥 Download JSON",
+                data=json_text,
+                file_name=json_filename,
+                mime="application/json"
+            )
+            st_ace(value=json_text, language="json", theme="monokai", readonly=True)
+
+           
     else:
         st.warning("⚠️ Please enter all required fields.")
