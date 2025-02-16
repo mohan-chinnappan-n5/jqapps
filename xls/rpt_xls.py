@@ -63,6 +63,21 @@ def get_report_details(access_token, instance_url, report_id):
         return {"error": str(e)}
 
 
+# Function to get the list of reports
+def list_reports(access_token, instance_url):
+    try:
+        url = f"{instance_url}/services/data/v60.0/analytics/reports"
+        headers = {"Authorization": f"Bearer {access_token}"}
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"error": f"Error: {response.status_code} - {response.text}"}
+    except Exception as e:
+        return {"error": str(e)}
+
 # Function to get the list of report types
 def get_report_types(access_token, instance_url):
     try:
@@ -89,9 +104,31 @@ instance_url = st.text_input("🌐 Instance URL", value="https://your-instance.s
 report_id = st.text_input("📄 Report ID : 00Oxxxx")
 
 # Options
-option = st.radio("Select an action:", ["Download Excel", "Describe Report", "Get Report Details", "Get List of Report Types"])
+option = st.radio("Select an action:", ["List of Reports", "Download Excel", "Describe Report", "Get Report Details", "Get List of Report Types"])
 
 if st.button("Execute"):
+
+    if access_token and instance_url :
+        if option == "List of Reports":   
+            list_of_reports = list_reports(access_token, instance_url)
+
+            # Display JSON with streamlit_ace
+            st.subheader("📑 List of Reports(JSON)")
+            json_text = json.dumps(list_of_reports, indent=4)
+            # Provide JSON download button
+            json_filename = "list_of_reports.json"
+            st.download_button(
+                label="📥 Download JSON",
+                data=json_text,
+                file_name=json_filename,
+                mime="application/json"
+            )
+            st_ace(value=json_text, language="json", theme="monokai", readonly=True)
+    else :
+        st.warning("⚠️ Please enter Access Token and Instance URL.")
+
+            
+
     if access_token and instance_url and report_id:
         if option == "Download Excel":
             file_path, message = get_excel_report(access_token, instance_url, report_id)
@@ -105,6 +142,8 @@ if st.button("Execute"):
                 )
             else:
                 st.error(message)
+        
+       
 
         elif option == "Describe Report":
             report_description = describe_report(access_token, instance_url, report_id)
